@@ -2,69 +2,111 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Contador</title>
+<title>Marca de Agua</title>
 
 <style>
-html, body{
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    background:black;
-    overflow:hidden;
-    user-select:none;
-    -webkit-user-select:none;
-    touch-action:manipulation;
+body{
+    font-family:Arial,sans-serif;
+    margin:20px;
+    text-align:center;
 }
 
-#pantalla{
-    width:100%;
-    height:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:white;
-    font-size:120px;
-    font-family:Arial, sans-serif;
-    transition:background-color 0.1s;
+input{
+    margin:10px;
 }
 
-.flash{
-    background:#ff7b00;
+canvas{
+    max-width:100%;
+    border:1px solid #ccc;
+    margin-top:20px;
+}
+
+button{
+    padding:10px 20px;
+    margin:10px;
 }
 </style>
 </head>
-
 <body>
 
-<div id="pantalla">0</div>
+<h2>Generador de Marca de Agua</h2>
+
+<div>
+    <input type="file" id="foto" accept="image/*"><br>
+    <input type="file" id="marca" accept="image/*"><br>
+
+    <button id="generar">Generar</button>
+    <button id="descargar">Descargar</button>
+</div>
+
+<canvas id="canvas"></canvas>
 
 <script>
 
-let contador = 0;
-const pantalla = document.getElementById("pantalla");
+const fotoInput = document.getElementById('foto');
+const marcaInput = document.getElementById('marca');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-function sumar(){
+document.getElementById('generar').addEventListener('click', () => {
 
-    contador++;
+    const fotoFile = fotoInput.files[0];
+    const marcaFile = marcaInput.files[0];
 
-    pantalla.textContent = contador;
-
-    if(navigator.vibrate){
-        navigator.vibrate(40);
+    if(!fotoFile || !marcaFile){
+        alert('Selecciona ambas imágenes');
+        return;
     }
 
-    pantalla.classList.add("flash");
+    const foto = new Image();
+    const marca = new Image();
 
-    setTimeout(()=>{
-        pantalla.classList.remove("flash");
-    },100);
-}
+    foto.onload = () => {
 
-document.body.addEventListener("click", sumar);
-document.body.addEventListener("touchstart", sumar);
+        marca.onload = () => {
+
+            canvas.width = foto.width;
+            canvas.height = foto.height;
+
+            ctx.drawImage(foto,0,0);
+
+            const marcaAncho = foto.width * 0.20;
+
+            const proporcion = marca.height / marca.width;
+
+            const marcaAlto = marcaAncho * proporcion;
+
+            const margen = 10;
+
+            ctx.drawImage(
+                marca,
+                foto.width - marcaAncho - margen,
+                margen,
+                marcaAncho,
+                marcaAlto
+            );
+
+        };
+
+        marca.src = URL.createObjectURL(marcaFile);
+    };
+
+    foto.src = URL.createObjectURL(fotoFile);
+
+});
+
+document.getElementById('descargar').addEventListener('click', () => {
+
+    const link = document.createElement('a');
+
+    link.download = 'foto_con_marca.png';
+    link.href = canvas.toDataURL('image/png');
+
+    link.click();
+
+});
 
 </script>
 
