@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Contador</title>
+
+<style>
+html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    background:black;
+    overflow:hidden;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:manipulation;
+}
+
+#pantalla{
+    width:100%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:120px;
+    font-family:Arial, sans-serif;
+    transition:background-color 0.1s;
+}
+
+.flash{
+    background:#ff7b00;
+}
+</style>
+</head>
+
+<body>
+
+<div id="pantalla">0</div>
+
+<script>
+
+let contador = 0;
+const pantalla = document.getElementById("pantalla");
+
+function sumar(){
+
+    contador++;
+
+    pantalla.textContent = contador;
+
+    if(navigator.vibrate){
+        navigator.vibrate(40);
+    }
+
+    pantalla.classList.add("flash");
+
+    setTimeout(()=>{
+        pantalla.classList.remove("flash");
+    },100);
+}
+
+document.body.addEventListener("click", sumar);
+document.body.addEventListener("touchstart", sumar);
+
+</script>
+
+</body>
+</html>
