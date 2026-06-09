@@ -1,62 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Marca de Agua</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Marca de Agua</title>
 
 <style>
 body{
-    font-family:Arial,sans-serif;
+    font-family: Arial, sans-serif;
     margin:20px;
     text-align:center;
+    background:#f5f5f5;
 }
 
-input{
-    margin:10px;
+h1{
+    font-size:24px;
 }
 
-canvas{
-    max-width:100%;
-    border:1px solid #ccc;
-    margin-top:20px;
+button,
+input[type=file]{
+    margin:8px;
 }
 
 button{
-    padding:10px 20px;
-    margin:10px;
+    padding:12px 20px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+canvas{
+    margin-top:20px;
+    max-width:100%;
+    border:1px solid #ccc;
+    background:white;
+}
+
+#acciones{
+    margin-top:15px;
 }
 </style>
 </head>
 <body>
 
-<h2>Generador de Marca de Agua</h2>
+<h1>Generador de Marca de Agua</h1>
 
 <div>
-    <input type="file" id="foto" accept="image/*"><br>
-    <input type="file" id="marca" accept="image/*"><br>
+    <button id="camaraBtn">📷 Tomar Foto</button>
+</div>
 
-    <button id="generar">Generar</button>
-    <button id="descargar">Descargar</button>
+<div>
+    <input type="file" id="fotoInput" accept="image/*" capture="environment" hidden>
+</div>
+
+<div>
+    <label><strong>Marca de Agua (PNG)</strong></label><br>
+    <input type="file" id="marcaInput" accept="image/png,image/*">
+</div>
+
+<div>
+    <button id="generarBtn">Generar</button>
 </div>
 
 <canvas id="canvas"></canvas>
 
+<div id="acciones">
+    <button id="descargarBtn">💾 Descargar</button>
+</div>
+
 <script>
 
-const fotoInput = document.getElementById('foto');
-const marcaInput = document.getElementById('marca');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const fotoInput = document.getElementById("fotoInput");
+const marcaInput = document.getElementById("marcaInput");
 
-document.getElementById('generar').addEventListener('click', () => {
+const camaraBtn = document.getElementById("camaraBtn");
+const generarBtn = document.getElementById("generarBtn");
+const descargarBtn = document.getElementById("descargarBtn");
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+camaraBtn.addEventListener("click", () => {
+    fotoInput.click();
+});
+
+generarBtn.addEventListener("click", () => {
 
     const fotoFile = fotoInput.files[0];
     const marcaFile = marcaInput.files[0];
 
-    if(!fotoFile || !marcaFile){
-        alert('Selecciona ambas imágenes');
+    if(!fotoFile){
+        alert("Seleccione o tome una foto.");
+        return;
+    }
+
+    if(!marcaFile){
+        alert("Seleccione una marca de agua.");
         return;
     }
 
@@ -70,22 +108,34 @@ document.getElementById('generar').addEventListener('click', () => {
             canvas.width = foto.width;
             canvas.height = foto.height;
 
-            ctx.drawImage(foto,0,0);
+            ctx.clearRect(0,0,canvas.width,canvas.height);
 
-            const marcaAncho = foto.width * 0.20;
+            ctx.drawImage(
+                foto,
+                0,
+                0,
+                foto.width,
+                foto.height
+            );
 
-            const proporcion = marca.height / marca.width;
+            // Logo = 20% del ancho de la foto
+            const logoWidth = foto.width * 0.20;
 
-            const marcaAlto = marcaAncho * proporcion;
+            const ratio = marca.height / marca.width;
 
-            const margen = 10;
+            const logoHeight = logoWidth * ratio;
+
+            const margen = 20;
+
+            const x = foto.width - logoWidth - margen;
+            const y = margen;
 
             ctx.drawImage(
                 marca,
-                foto.width - marcaAncho - margen,
-                margen,
-                marcaAncho,
-                marcaAlto
+                x,
+                y,
+                logoWidth,
+                logoHeight
             );
 
         };
@@ -97,14 +147,19 @@ document.getElementById('generar').addEventListener('click', () => {
 
 });
 
-document.getElementById('descargar').addEventListener('click', () => {
+descargarBtn.addEventListener("click", () => {
 
-    const link = document.createElement('a');
+    if(canvas.width === 0){
+        alert("Primero genere una imagen.");
+        return;
+    }
 
-    link.download = 'foto_con_marca.png';
-    link.href = canvas.toDataURL('image/png');
+    const enlace = document.createElement("a");
 
-    link.click();
+    enlace.download = "foto_con_marca.png";
+    enlace.href = canvas.toDataURL("image/png");
+
+    enlace.click();
 
 });
 
