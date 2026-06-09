@@ -3,27 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador de Marca de Agua</title>
+
+<title>AEROS - Marca de Agua</title>
 
 <style>
+
 body{
-    font-family: Arial, sans-serif;
-    margin:20px;
+    margin:0;
+    padding:20px;
     text-align:center;
+    font-family:Arial,sans-serif;
     background:#f5f5f5;
 }
 
 h1{
-    font-size:24px;
-}
-
-button,
-input[type=file]{
-    margin:8px;
+    margin-bottom:20px;
 }
 
 button{
-    padding:12px 20px;
+    padding:14px 20px;
+    margin:8px;
     font-size:16px;
     cursor:pointer;
 }
@@ -35,43 +34,40 @@ canvas{
     background:white;
 }
 
-#acciones{
-    margin-top:15px;
-}
 </style>
 </head>
 <body>
 
-<h1>Generador de Marca de Agua</h1>
+<h1>AEROS SOLUCIONES</h1>
 
-<div>
-    <button id="camaraBtn">📷 Tomar Foto</button>
-</div>
+<button id="camaraBtn">
+📷 Tomar Foto
+</button>
 
-<div>
-    <input type="file" id="fotoInput" accept="image/*" capture="environment" hidden>
-</div>
+<input
+type="file"
+id="fotoInput"
+accept="image/*"
+capture="environment"
+hidden>
 
-<div>
-    <label><strong>Marca de Agua (PNG)</strong></label><br>
-    <input type="file" id="marcaInput" accept="image/png,image/*">
-</div>
+<br>
 
-<div>
-    <button id="generarBtn">Generar</button>
-</div>
+<button id="generarBtn">
+⚙ Generar Marca de Agua
+</button>
+
+<button id="descargarBtn">
+💾 Descargar JPG
+</button>
+
+<br>
 
 <canvas id="canvas"></canvas>
-
-<div id="acciones">
-    <button id="descargarBtn">💾 Descargar</button>
-</div>
 
 <script>
 
 const fotoInput = document.getElementById("fotoInput");
-const marcaInput = document.getElementById("marcaInput");
-
 const camaraBtn = document.getElementById("camaraBtn");
 const generarBtn = document.getElementById("generarBtn");
 const descargarBtn = document.getElementById("descargarBtn");
@@ -86,78 +82,94 @@ camaraBtn.addEventListener("click", () => {
 generarBtn.addEventListener("click", () => {
 
     const fotoFile = fotoInput.files[0];
-    const marcaFile = marcaInput.files[0];
 
     if(!fotoFile){
-        alert("Seleccione o tome una foto.");
-        return;
-    }
-
-    if(!marcaFile){
-        alert("Seleccione una marca de agua.");
+        alert("Primero tome una foto.");
         return;
     }
 
     const foto = new Image();
-    const marca = new Image();
+    const logo = new Image();
 
     foto.onload = () => {
 
-        marca.onload = () => {
+        logo.onload = () => {
 
             canvas.width = foto.width;
             canvas.height = foto.height;
 
-            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
             ctx.drawImage(
                 foto,
                 0,
-                0,
-                foto.width,
-                foto.height
+                0
             );
 
-            // Logo = 20% del ancho de la foto
-            const logoWidth = foto.width * 0.20;
+            // Logo = 30% del ancho
 
-            const ratio = marca.height / marca.width;
+            const logoWidth = foto.width * 0.30;
 
-            const logoHeight = logoWidth * ratio;
+            const proporcion =
+                logo.height / logo.width;
 
-            const margen = 20;
+            const logoHeight =
+                logoWidth * proporcion;
 
-            const x = foto.width - logoWidth - margen;
+            const margen = 30;
+
+            const x =
+                foto.width -
+                logoWidth -
+                margen;
+
             const y = margen;
 
             ctx.drawImage(
-                marca,
+                logo,
                 x,
                 y,
                 logoWidth,
                 logoHeight
             );
 
+            alert("Marca aplicada correctamente.");
+
         };
 
-        marca.src = URL.createObjectURL(marcaFile);
+        logo.src =
+        "1000277928-removebg-preview.png";
+
     };
 
-    foto.src = URL.createObjectURL(fotoFile);
+    foto.src =
+    URL.createObjectURL(fotoFile);
 
 });
 
 descargarBtn.addEventListener("click", () => {
 
     if(canvas.width === 0){
-        alert("Primero genere una imagen.");
+        alert("Primero genere la imagen.");
         return;
     }
 
-    const enlace = document.createElement("a");
+    const enlace =
+        document.createElement("a");
 
-    enlace.download = "foto_con_marca.png";
-    enlace.href = canvas.toDataURL("image/png");
+    enlace.download =
+        "AEROS_FOTO.jpg";
+
+    enlace.href =
+        canvas.toDataURL(
+            "image/jpeg",
+            0.80
+        );
 
     enlace.click();
 
