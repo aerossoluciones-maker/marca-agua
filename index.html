@@ -4,34 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AEROS - Marca de Agua</title>
+<title>AEROS SOLUCIONES</title>
 
 <style>
 
 body{
     margin:0;
     padding:20px;
-    text-align:center;
+    background:#111;
+    color:white;
     font-family:Arial,sans-serif;
-    background:#f5f5f5;
+    text-align:center;
 }
 
 h1{
-    margin-bottom:20px;
+    margin-top:20px;
+    margin-bottom:30px;
 }
 
 button{
-    padding:14px 20px;
-    margin:8px;
-    font-size:16px;
-    cursor:pointer;
+    width:90%;
+    max-width:400px;
+    padding:20px;
+    font-size:22px;
+    border:none;
+    border-radius:12px;
+    margin:10px;
+}
+
+#tomarFoto{
+    background:#ff7b00;
+    color:white;
+}
+
+#compartir{
+    background:#25D366;
+    color:white;
+    display:none;
+}
+
+#nuevaFoto{
+    background:#444;
+    color:white;
+    display:none;
+}
+
+#preview{
+    width:100%;
+    max-width:500px;
+    margin-top:20px;
+    border-radius:10px;
+    display:none;
 }
 
 canvas{
-    margin-top:20px;
-    max-width:100%;
-    border:1px solid #ccc;
-    background:white;
+    display:none;
 }
 
 </style>
@@ -40,8 +67,16 @@ canvas{
 
 <h1>AEROS SOLUCIONES</h1>
 
-<button id="camaraBtn">
-📷 Tomar Foto
+<button id="tomarFoto">
+📷 TOMAR FOTO
+</button>
+
+<button id="compartir">
+📤 COMPARTIR
+</button>
+
+<button id="nuevaFoto">
+📷 NUEVA FOTO
 </button>
 
 <input
@@ -51,42 +86,35 @@ accept="image/*"
 capture="environment"
 hidden>
 
-<br>
-
-<button id="generarBtn">
-⚙ Generar Marca de Agua
-</button>
-
-<button id="descargarBtn">
-💾 Descargar JPG
-</button>
-
-<br>
+<img id="preview">
 
 <canvas id="canvas"></canvas>
 
 <script>
 
 const fotoInput = document.getElementById("fotoInput");
-const camaraBtn = document.getElementById("camaraBtn");
-const generarBtn = document.getElementById("generarBtn");
-const descargarBtn = document.getElementById("descargarBtn");
+const tomarFoto = document.getElementById("tomarFoto");
+const compartir = document.getElementById("compartir");
+const nuevaFoto = document.getElementById("nuevaFoto");
+
+const preview = document.getElementById("preview");
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-camaraBtn.addEventListener("click", () => {
+let archivoFinal = null;
+
+tomarFoto.addEventListener("click", () => {
     fotoInput.click();
 });
 
-generarBtn.addEventListener("click", () => {
+fotoInput.addEventListener("change", procesarFoto);
 
-    const fotoFile = fotoInput.files[0];
+async function procesarFoto(){
 
-    if(!fotoFile){
-        alert("Primero tome una foto.");
-        return;
-    }
+    const archivo = fotoInput.files[0];
+
+    if(!archivo) return;
 
     const foto = new Image();
     const logo = new Image();
@@ -98,80 +126,93 @@ generarBtn.addEventListener("click", () => {
             canvas.width = foto.width;
             canvas.height = foto.height;
 
-            ctx.clearRect(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
             ctx.drawImage(
                 foto,
                 0,
-                0
+                0,
+                foto.width,
+                foto.height
             );
-
-            // Logo = 30% del ancho
 
             const logoWidth = foto.width * 0.30;
 
-            const proporcion =
+            const ratio =
                 logo.height / logo.width;
 
             const logoHeight =
-                logoWidth * proporcion;
+                logoWidth * ratio;
 
             const margen = 30;
 
-            const x =
-                foto.width -
-                logoWidth -
-                margen;
-
-            const y = margen;
-
             ctx.drawImage(
                 logo,
-                x,
-                y,
+                foto.width - logoWidth - margen,
+                margen,
                 logoWidth,
                 logoHeight
             );
 
-            alert("Marca aplicada correctamente.");
+            canvas.toBlob((blob)=>{
+
+                archivoFinal = new File(
+                    [blob],
+                    "AEROS_FOTO.jpg",
+                    {type:"image/jpeg"}
+                );
+
+                preview.src =
+                    URL.createObjectURL(blob);
+
+                preview.style.display = "block";
+
+                compartir.style.display = "inline-block";
+                nuevaFoto.style.display = "inline-block";
+
+            },"image/jpeg",0.80);
 
         };
 
         logo.src =
-        "1000277928-removebg-preview.png";
-
+            "1000277928-removebg-preview.png";
     };
 
     foto.src =
-    URL.createObjectURL(fotoFile);
+        URL.createObjectURL(archivo);
+}
 
-});
+compartir.addEventListener("click", async ()=>{
 
-descargarBtn.addEventListener("click", () => {
-
-    if(canvas.width === 0){
-        alert("Primero genere la imagen.");
+    if(!archivoFinal){
+        alert("No hay foto procesada.");
         return;
     }
 
-    const enlace =
-        document.createElement("a");
+    try{
 
-    enlace.download =
-        "AEROS_FOTO.jpg";
+        await navigator.share({
+            files:[archivoFinal],
+            title:"AEROS SOLUCIONES"
+        });
 
-    enlace.href =
-        canvas.toDataURL(
-            "image/jpeg",
-            0.80
-        );
+    }catch(err){
+        console.log(err);
+    }
 
-    enlace.click();
+});
+
+nuevaFoto.addEventListener("click", ()=>{
+
+    fotoInput.value = "";
+
+    preview.style.display = "none";
+
+    compartir.style.display = "none";
+
+    nuevaFoto.style.display = "none";
+
+    archivoFinal = null;
+
+    fotoInput.click();
 
 });
 
