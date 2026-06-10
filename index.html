@@ -30,10 +30,16 @@ button{
     border:none;
     border-radius:12px;
     margin:10px;
+    cursor:pointer;
 }
 
 #tomarFoto{
     background:#ff7b00;
+    color:white;
+}
+
+#galeriaBtn{
+    background:#2196F3;
     color:white;
 }
 
@@ -71,6 +77,10 @@ canvas{
 📷 TOMAR FOTO
 </button>
 
+<button id="galeriaBtn">
+🖼️ ELEGIR FOTO
+</button>
+
 <button id="compartir">
 📤 COMPARTIR
 </button>
@@ -86,6 +96,12 @@ accept="image/*"
 capture="environment"
 hidden>
 
+<input
+type="file"
+id="galeriaInput"
+accept="image/*"
+hidden>
+
 <img id="preview">
 
 <canvas id="canvas"></canvas>
@@ -93,7 +109,11 @@ hidden>
 <script>
 
 const fotoInput = document.getElementById("fotoInput");
+const galeriaInput = document.getElementById("galeriaInput");
+
 const tomarFoto = document.getElementById("tomarFoto");
+const galeriaBtn = document.getElementById("galeriaBtn");
+
 const compartir = document.getElementById("compartir");
 const nuevaFoto = document.getElementById("nuevaFoto");
 
@@ -108,11 +128,24 @@ tomarFoto.addEventListener("click", () => {
     fotoInput.click();
 });
 
-fotoInput.addEventListener("change", procesarFoto);
+galeriaBtn.addEventListener("click", () => {
+    galeriaInput.click();
+});
 
-async function procesarFoto(){
+fotoInput.addEventListener(
+    "change",
+    procesarFoto
+);
 
-    const archivo = fotoInput.files[0];
+galeriaInput.addEventListener(
+    "change",
+    procesarFoto
+);
+
+async function procesarFoto(event){
+
+    const archivo =
+        event.target.files[0];
 
     if(!archivo) return;
 
@@ -126,6 +159,13 @@ async function procesarFoto(){
             canvas.width = foto.width;
             canvas.height = foto.height;
 
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
             ctx.drawImage(
                 foto,
                 0,
@@ -134,7 +174,10 @@ async function procesarFoto(){
                 foto.height
             );
 
-            const logoWidth = foto.width * 0.50;
+            /* Logo al 40% */
+
+            const logoWidth =
+                foto.width * 0.40;
 
             const ratio =
                 logo.height / logo.width;
@@ -142,11 +185,13 @@ async function procesarFoto(){
             const logoHeight =
                 logoWidth * ratio;
 
-            const margen = 30;
+            const margen = 10;
 
             ctx.drawImage(
                 logo,
-                foto.width - logoWidth - margen,
+                foto.width -
+                logoWidth -
+                margen,
                 margen,
                 logoWidth,
                 logoHeight
@@ -157,64 +202,101 @@ async function procesarFoto(){
                 archivoFinal = new File(
                     [blob],
                     "AEROS_FOTO.jpg",
-                    {type:"image/jpeg"}
+                    {
+                        type:"image/jpeg"
+                    }
                 );
 
                 preview.src =
                     URL.createObjectURL(blob);
 
-                preview.style.display = "block";
+                preview.style.display =
+                    "block";
 
-                compartir.style.display = "inline-block";
-                nuevaFoto.style.display = "inline-block";
+                compartir.style.display =
+                    "inline-block";
 
-            },"image/jpeg",0.80);
+                nuevaFoto.style.display =
+                    "inline-block";
+
+                tomarFoto.style.display =
+                    "none";
+
+                galeriaBtn.style.display =
+                    "none";
+
+            },
+            "image/jpeg",
+            0.80);
 
         };
 
         logo.src =
             "1000277928-removebg-preview.png";
+
     };
 
     foto.src =
         URL.createObjectURL(archivo);
+
 }
 
-compartir.addEventListener("click", async ()=>{
+compartir.addEventListener(
+    "click",
+    async ()=>{
 
-    if(!archivoFinal){
-        alert("No hay foto procesada.");
-        return;
+        if(!archivoFinal){
+
+            alert(
+                "No hay foto procesada."
+            );
+
+            return;
+        }
+
+        try{
+
+            await navigator.share({
+                files:[archivoFinal],
+                title:
+                "AEROS SOLUCIONES"
+            });
+
+        }catch(error){
+
+            console.log(error);
+
+        }
+
     }
+);
 
-    try{
+nuevaFoto.addEventListener(
+    "click",
+    ()=>{
 
-        await navigator.share({
-            files:[archivoFinal],
-            title:"AEROS SOLUCIONES"
-        });
+        fotoInput.value = "";
+        galeriaInput.value = "";
 
-    }catch(err){
-        console.log(err);
+        archivoFinal = null;
+
+        preview.style.display =
+            "none";
+
+        compartir.style.display =
+            "none";
+
+        nuevaFoto.style.display =
+            "none";
+
+        tomarFoto.style.display =
+            "inline-block";
+
+        galeriaBtn.style.display =
+            "inline-block";
+
     }
-
-});
-
-nuevaFoto.addEventListener("click", ()=>{
-
-    fotoInput.value = "";
-
-    preview.style.display = "none";
-
-    compartir.style.display = "none";
-
-    nuevaFoto.style.display = "none";
-
-    archivoFinal = null;
-
-    fotoInput.click();
-
-});
+);
 
 </script>
 
